@@ -1,0 +1,14 @@
+/* eslint-disable */
+
+(function directusConfig() {{
+  const config = {{
+    api: {{
+        {content}
+    }},
+    allowOtherAPI: true,
+    routerMode: "hash", // hash | history,
+    routerBaseUrl: "/"
+  }};
+
+  window.__DirectusConfig__ = config;
+}})();

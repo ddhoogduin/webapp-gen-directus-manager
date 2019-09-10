@@ -1,5 +1,5 @@
 import os
-
+import re
 
 class ModuleFileSystem:
     @staticmethod
@@ -16,12 +16,15 @@ class ModuleFileSystem:
 
 
 class GeneralHelper:
-
     @staticmethod
     def get_index_on_dict_value(collection, key, value):
         for i in range(len(collection)):
             if collection[i][key] == value:
                 return i
         return False
+
+    @staticmethod
+    def prepare_string(str_value):
+        return re.sub(r"\W", "", str_value)
 
 

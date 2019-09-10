@@ -1,8 +1,11 @@
 import os
+from prettytable import PrettyTable
 
-from utils import GeneralHelper
+from utils import GeneralHelper, ModuleFileSystem
 from engine.Environments import Environments
 from engine.Database import db
+from engine.Migration import Migration
+from engine.DirectusController import DirectusController
 
 
 class Environment:
@@ -38,6 +41,14 @@ class Environment:
         else:
             raise SystemError('Unknown environment reference:', self.ref_name)
 
+    def ouput(self):
+        x = PrettyTable()
+        x.field_names = ["#", "Reference Name", "Database", "Name"]
+        for i in range(len(self.projects)):
+            item = self.projects[i]
+            x.add_row([i+1, item['ref'], item['database'], item['name']])
+        return x
+
     def load_projects(self):
         for line in open("data/envs/{ref_name}.txt".format(ref_name=self.ref_name)).readlines():
             if line:
@@ -45,7 +56,8 @@ class Environment:
                     item = {}
                     data = line.split('\t')
                     item['ref'] = data[0]
-                    item['name'] = data[1]
+                    item['database'] = GeneralHelper.prepare_string(data[1])
+                    item['name'] = GeneralHelper.prepare_string(data[2])
                     self.projects.append(item)
                 except KeyError:
                     pass
@@ -57,7 +69,7 @@ class Environment:
                 line = line.replace('\n', ' ').replace('\r', '')
                 fp.write(line+"\n")
 
-        template_file = open('assets/config-format.txt')
+        template_file = open('assets/formats/config-format.txt')
         template = template_file.read()
         template_file.close()
 
@@ -65,42 +77,93 @@ class Environment:
         with open("{path}public/admin/config.js".format(path=self.path.replace(' ', '')), 'w') as fp:
             for i in range(len(self.projects)):
                 if i+1 == len(self.projects):
-                    tmpl = '"{path}":"{name}"\n'
+                    tmpl = '\n"{path}":"{name}"'
                 else:
-                    tmpl = '"{path}":"{name}",\n'
+                    tmpl = '\n"{path}":"{name}",'
                 config_content += tmpl.format(
                     path="../"+self.projects[i]['ref'],
                     name=self.projects[i]['name']
                 )
-            fp.writelines(template.format(content=config_content))
+            fp.write(template.format(content=config_content))
 
+    def get_project(self, ref_name):
+        index = GeneralHelper.get_index_on_dict_value(
+            collection=self.projects,
+            key='ref',
+            value=ref_name
+        )
+        return self.projects[index]
+
+    def init_env_project_file(self):
+        ModuleFileSystem.check_files(['data/envs/{ref_name}.txt'.format(
+            ref_name=self.ref_name
+        )])
+
+    def delete_project(self, project, keep_db):
+        index = GeneralHelper.get_index_on_dict_value(
+            collection=self.projects,
+            key='ref',
+            value=project.ref_name
+        )
+        self.projects.pop(index)
+        DirectusController.delete_config(
+            path=self.path,
+            pj_name=project.ref_name
+        )
+        if not keep_db:
+            env_db = db(self.db_user, self.db_pw)
+            env_db.drop_db(project.ref_name)
+
+        self.write()
 
     def add_project(self, project):
         env_db = db(self.db_user, self.db_pw)
-        env_db.connect()
-        env_db.connection.execute('CREATE DATABASE {name}'.format(name=project.ref_name))
-        os.system("cd {path} && php bin/directus install:config"
-                  " -h localhost"
-                  " -n {db_name}"
-                  " -u {db_user}"
-                  " -p {db_password}"
-                  " -N {pj_name}".format(
-                    path=self.path.replace(' ', ''),
-                    db_name=project.ref_name,
-                    db_user=self.db_user,
-                    db_password=self.db_pw,
-                    pj_name=project.ref_name))
+        env_db.add_db(project.name)
+        DirectusController.install_config(
+            path=self.path,
+            db_name=self.ref_name,
+            db_user=self.db_user,
+            db_pw=self.db_pw,
+            pj_name=project.ref_name
+        )
+        DirectusController.install_database(
+            path=self.path,
+            pj_name=project.name
+        )
+        DirectusController.init_user(
+            path=self.path,
+            pj_name=project.name
+        )
+        self.write_new_projects(project=project)
 
-        os.system("cd {path} && php bin/directus install:database -N {pj_name}".format(
-                    path=self.path.replace(' ', ''),
-                    pj_name=project.ref_name))
-
-        os.system("cd {path} && php bin/directus install:install"
-                  " -e {name}@example.com "
-                  " -p password"
-                  " -N {name}".format(
-                    path=self.path.replace(' ', ''),
-                    name=project.ref_name))
-
-        self.projects.append(dict(ref=project.ref_name, name=project.name))
+    def write_new_projects(self, project):
+        database = project.database if project.database else project.ref_name
+        self.projects.append(dict(
+            ref=GeneralHelper.prepare_string(project.ref_name),
+            database=GeneralHelper.prepare_string(database),
+            name=GeneralHelper.prepare_string(project.name)
+        ))
         self.write()
+
+    def templatify_project(self, project):
+        migration = Migration(
+            username=self.db_user,
+            password=self.db_pw,
+            name=project.ref_name,
+            database=project.database
+        )
+        migration.create_db_migration()
+
+    def list_dbs(self):
+        db_env = db(username=self.db_user, password=self.db_pw)
+        return list(map(lambda d: d[0], db_env.get_db_databases()))
+
+    def link_project(self, project, db_name):
+        DirectusController.install_config(
+            path=self.path,
+            db_name=db_name,
+            db_user=self.db_user,
+            db_pw=self.db_pw,
+            pj_name=project.ref_name
+        )
+        self.write_new_projects(project=project)

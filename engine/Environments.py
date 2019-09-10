@@ -1,27 +1,27 @@
 
 from prettytable import PrettyTable
 import os.path
-from utils import ModuleFileSystem
+from utils import ModuleFileSystem, GeneralHelper
 
 
 class Environments:
 
     def __init__(self):
         self.items = []
-        ModuleFileSystem.check_dirs(['data/envs'])
-        ModuleFileSystem.check_files(['data/envs.txt'])
+        ModuleFileSystem.check_dirs(['data/envs', 'data/migrations','data/tmp/dev'])
+        ModuleFileSystem.check_files(['data/envs.txt','data/tmp/dev/null'])
         self.load()
 
-    def add(self, Envirionment):
+    def add(self, environment):
         item = {
-            'ref': Envirionment.ref_name,
-            'name': Envirionment.name,
-            'path': Envirionment.path,
-            'db_user':Envirionment.db_user,
-            'db_password':Envirionment.db_pw
+            'ref': GeneralHelper.prepare_string(environment.ref_name),
+            'name': GeneralHelper.prepare_string(environment.name),
+            'path': environment.path,
+            'db_user': GeneralHelper.prepare_string(environment.db_user),
+            'db_password': GeneralHelper.prepare_string(environment.db_pw)
         }
         self.items.append(item)
-        Envirionment.init_env_project_file()
+        environment.init_env_project_file()
         self.write()
 
     def write(self):
@@ -29,7 +29,7 @@ class Environments:
             for item in self.items:
                 line = "\t".join(item.values())
                 line = line.replace('\n', ' ').replace('\r', '')
-                fp.writelines(line)
+                fp.write(line+'\n')
 
     def get(self):
         x = PrettyTable()
@@ -49,7 +49,7 @@ class Environments:
                     item['name'] = data[1]
                     item['path'] = data[2]
                     item['db_user'] = data[3]
-                    item['db_pw'] = data[4]
+                    item['db_pw'] = data[4].replace('\n', '')
                     self.items.append(item)
                 except KeyError:
                     pass

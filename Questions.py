@@ -46,8 +46,8 @@ class PjQuestions:
         {
             'type': 'list',
             'name': 'task',
-            'message': 'Select a project option to continue:',
-            'choices': ['create', 'project settings', 'link']
+            'message': 'Environment tasks:',
+            'choices': ['create project', 'project settings', 'link project to database']
         }
     ]
     create = [
@@ -63,4 +63,47 @@ class PjQuestions:
             'message': 'Enter a unique name for the project:',
             'validate': PjValidations.validate_unique_name
         }
+    ]
+    select_project = [
+        {
+            'type': 'list',
+            'name': 'pj_ref',
+            'message': 'Projects in environment:',
+            'choices': []
+        }
+    ]
+    project_task = [
+        {
+            'type': 'list',
+            'name': 'pj_task',
+            'message': 'Project tasks:',
+            'choices': ['Templatify project database', 'Delete project']
+        }
+    ]
+    delete = [
+        {
+            'type': 'confirm',
+            'name': 'keep_db',
+            'message': 'Do you want to keep the project database :'
+        },
+        {
+            'type': 'confirm',
+            'name': 'confirmation',
+            'message': 'Are you sure you want to delete this project? :'
+        }
+    ]
+    link = [
+        {
+            'type': 'list',
+            'name': 'database_name',
+            'message': 'Select a database:',
+            'choices': []
+        },
+        {
+            'type': 'input',
+            'name': 'install_ref',
+            'message': 'Enter a unique reference for the project:',
+            'validate': PjValidations.validate_unique_ref_name
+        },
+        create[1]
     ]

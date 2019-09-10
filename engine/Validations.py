@@ -74,6 +74,20 @@ class PjValidations:
         return True
 
     @staticmethod
+    def validate_unique_ref_name(value):
+        ref_name = re.sub('[\W_]+', '', value)
+        env = Environment(Environment.active)
+        name_unique = ValidationHelper.check_unique_from_dict(
+            data=env.projects,
+            key='ref',
+            value=ref_name
+        )
+        to_small = True if len(ref_name) < 3 else False
+        if not name_unique or to_small:
+            return "not unique or to small (min. 3 char)"
+        return True
+
+    @staticmethod
     def validate_unique_name(value):
         env = Environment(Environment.active)
         valid = ValidationHelper.check_unique_from_dict(

@@ -8,7 +8,7 @@ class EnvQuestions:
             'type': 'list',
             'name': 'task',
             'message': 'Select a environment option to continue:',
-            'choices': []
+            'choices': ['create']
         }
     ]
     load = [
@@ -16,7 +16,7 @@ class EnvQuestions:
             'type': 'list',
             'name': 'env_ref',
             'message': 'Select a Directus environment:',
-            'choices': []
+            'choices': ['<- back']
         }
     ]
     create = [
@@ -26,6 +26,40 @@ class EnvQuestions:
             'message': 'Enter a unique name for the Directus environment:',
             'validate': EnvValidations.validate_unique_name
         }
+    ]
+    delete = [
+
+        {
+            'type': 'list',
+            'name': 'ref_name',
+            'message': 'Select a Directus environment:',
+            'choices': []
+        },
+        {
+            'type': 'confirm',
+            'name': 'keep_db',
+            'message': 'Do you also want to keep all env related databases?:'
+        },
+        {
+            'type': 'confirm',
+            'name': 'confirmation',
+            'message': 'Are you sure you want to completely delete the environment?:'
+        }
+
+    ]
+    reset = [
+        {
+            'type': 'confirm',
+            'name': 'confirmation',
+            'message': 'Are you sure you want to completely delete ALL environments and migrations?:'
+        },
+
+        {
+            'type': 'confirm',
+            'name': 'keep_db',
+            'message': 'Do you also want to keep all related databases?:'
+        }
+
     ]
     env_db = [
         {
@@ -39,7 +73,14 @@ class EnvQuestions:
             'message': 'Enter the database password for the local env:'
         }
     ]
-
+    close = [
+        {
+            'type': 'list',
+            'name': 'close_action',
+            'message': 'Cancelling action, select an option:',
+            'choices': ['back to main options', 'exit module']
+        }
+    ]
 
 class PjQuestions:
     introduction = [
@@ -47,7 +88,7 @@ class PjQuestions:
             'type': 'list',
             'name': 'task',
             'message': 'Environment tasks:',
-            'choices': ['create project', 'project settings', 'link project to database']
+            'choices': ['create project', 'link project to database']
         }
     ]
     create = [
@@ -77,7 +118,7 @@ class PjQuestions:
             'type': 'list',
             'name': 'pj_task',
             'message': 'Project tasks:',
-            'choices': ['Templatify project database', 'Delete project']
+            'choices': ['templatify project database', 'delete project', 'back']
         }
     ]
     delete = [
@@ -106,4 +147,25 @@ class PjQuestions:
             'validate': PjValidations.validate_unique_ref_name
         },
         create[1]
+    ]
+    migrations = [
+        {
+            'type': 'confirm',
+            'name': 'use_migration',
+            'message': 'Do you want to use a database template?:'
+        },
+        {
+            'type': 'list',
+            'name': 'migration_file',
+            'message': 'Select a migration file:',
+            'choices': ['test']
+        }
+    ]
+    close = [
+        {
+            'type': 'list',
+            'name': 'close_action',
+            'message': 'Cancelling action, select an option:',
+            'choices': ['back to environment options', 'exit module']
+        }
     ]

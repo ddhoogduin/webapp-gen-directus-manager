@@ -6,6 +6,7 @@ from engine.Environments import Environments
 from engine.Database import db
 from engine.Migration import Migration
 from engine.DirectusController import DirectusController
+from engine.Project import Project
 
 
 class Environment:
@@ -50,6 +51,7 @@ class Environment:
         return x
 
     def load_projects(self):
+        self.projects = []
         for line in open("data/envs/{ref_name}.txt".format(ref_name=self.ref_name)).readlines():
             if line:
                 try:
@@ -116,20 +118,28 @@ class Environment:
 
         self.write()
 
-    def add_project(self, project):
+    def add_project(self, project, migration_file):
         env_db = db(self.db_user, self.db_pw)
-        env_db.add_db(project.name)
+        env_db.add_db(project.ref_name)
         DirectusController.install_config(
             path=self.path,
-            db_name=self.ref_name,
+            db_name=project.ref_name,
             db_user=self.db_user,
             db_pw=self.db_pw,
             pj_name=project.ref_name
         )
         DirectusController.install_database(
             path=self.path,
-            pj_name=project.name
+            pj_name=project.ref_name
         )
+        if migration_file:
+            Migration(
+                username=self.db_user,
+                password=self.db_pw,
+                database=project.ref_name,
+                name=project.ref_name
+            ).migrate(migration_file)
+
         DirectusController.init_user(
             path=self.path,
             pj_name=project.name
@@ -138,6 +148,7 @@ class Environment:
 
     def write_new_projects(self, project):
         database = project.database if project.database else project.ref_name
+        print(database)
         self.projects.append(dict(
             ref=GeneralHelper.prepare_string(project.ref_name),
             database=GeneralHelper.prepare_string(database),
@@ -167,3 +178,14 @@ class Environment:
             pj_name=project.ref_name
         )
         self.write_new_projects(project=project)
+
+    def delete(self, keep_db):
+        for project in self.projects:
+            project = Project(
+                ref=project['ref'],
+                name=project['name']
+            )
+            self.delete_project(
+                project=project,
+                keep_db=keep_db
+            )

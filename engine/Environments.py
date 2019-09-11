@@ -40,6 +40,7 @@ class Environments:
         return x
 
     def load(self):
+        self.items = []
         for line in open("data/envs.txt").readlines():
             if line:
                 try:
@@ -54,3 +55,15 @@ class Environments:
                 except KeyError:
                     pass
 
+    def clear_env(self, ref_name):
+        index = GeneralHelper.get_index_on_dict_value(
+            collection=self.items,
+            key='ref',
+            value=ref_name
+        )
+        self.items.pop(index)
+        self.write()
+        os.system('rm data/envs/{ref}.txt'.format(ref=ref_name))
+
+    def reset(self):
+        os.system('rm -r data')

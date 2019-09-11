@@ -12,6 +12,11 @@ class ValidationHelper:
                 return False
         return True
 
+    @staticmethod
+    def check_answers(answers):
+        if not answers:
+            raise KeyboardInterrupt
+
 
 class EnvValidations:
 

@@ -27,4 +27,10 @@ class GeneralHelper:
     def prepare_string(str_value):
         return re.sub(r"\W", "", str_value)
 
-
+    @staticmethod
+    def prepare_path(str_value):
+        str_value = str_value.replace('\n', ' ').replace('\r', '')
+        str_value = str_value.replace(' ', '')
+        if str_value.endswith('/'):
+            str_value = str_value[:-1]
+        return str_value

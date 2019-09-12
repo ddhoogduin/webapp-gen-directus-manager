@@ -17,7 +17,8 @@ do
             echo "${new_path}" > data/tmp/directusEnv.txt
             break
         fi
-    else
-        printf  "\nX No valid Directus environment, try again...\n"
     fi
+    tput setaf 1; echo -e  "\nNo valid Directus environment, try again..."
+    tput sgr0;
+
 done

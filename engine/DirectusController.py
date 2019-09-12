@@ -10,7 +10,7 @@ class DirectusController:
                   " -n {db_name}"
                   " -u {db_user}"
                   " -p {db_pw}"
-                  " -N {pj_name}".format(
+                  " -N {pj_name} -f".format(
                     path=path,
                     db_name=db_name,
                     db_user=db_user,
@@ -32,8 +32,7 @@ class DirectusController:
 
     @staticmethod
     def init_user(path, pj_name):
-        os.system("cd {path} && php bin/directus install:install"
-                  " -e {pj_name}@example.com "
+        os.system("cd {path} && php bin/directus install:install -e {pj_name}@example.com"
                   " -p password"
                   " -N {pj_name}".format(
                     path=path,

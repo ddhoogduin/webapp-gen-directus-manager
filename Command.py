@@ -13,6 +13,7 @@ from engine.Migration import Migration
 from utils import GeneralHelper
 module_options = ['<== BACK']
 
+
 class CommandEnv:
 
     def __init__(self):
@@ -134,8 +135,8 @@ class CommandEnv:
     @staticmethod
     def check_directus_dir():
         while True:
-            subprocess.run("bash shell/directoryFinder.sh", shell=True)
-            path = open("data/tmp/directusEnv.txt").read()
+            os.system("bash shell/directoryFinder.sh")
+            path = GeneralHelper.prepare_path(open("data/tmp/directusEnv.txt").read())
             os.remove("data/tmp/directusEnv.txt")
             if EnvValidations.validate_unique_path(path):
                 break
@@ -165,11 +166,10 @@ class CommandPj:
     def main(self):
         print(self.env.ouput())
         self.env.load_projects()
+        choices = ['create project', 'link project to database']
         if len(self.env.projects) > 0:
-            if 'project settings' not in PjQuestions.introduction[0]['choices']:
-                PjQuestions.introduction[0]['choices'].append('project settings')
-        if module_options[0] not in PjQuestions.introduction[0]['choices']:
-            PjQuestions.introduction[0]['choices'].append(module_options[0])
+            choices = ['create project', 'project settings','link project to database']
+        PjQuestions.introduction[0]['choices'] = choices + [module_options[0]]
         intro_data = prompt(PjQuestions.introduction)
         try:
             ValidationHelper.check_answers(intro_data)
@@ -200,11 +200,12 @@ class CommandPj:
 
     def create(self):
         migration_file=None
-        migration_data = prompt(PjQuestions.migrations[0])
-        ValidationHelper.check_answers(migration_file)
-        if migration_data['use_migration']:
-            PjQuestions.migrations[1]['choices'] = Migration.get_migrations()
-            migration_file = prompt(PjQuestions.migrations[1])['migration_file']
+        if len(Migration.get_migrations()) > 0:
+            migration_data = prompt(PjQuestions.migrations[0])
+            ValidationHelper.check_answers(migration_data)
+            if migration_data['use_migration']:
+                PjQuestions.migrations[1]['choices'] = Migration.get_migrations()
+                migration_file = prompt(PjQuestions.migrations[1])['migration_file']
         install_data = prompt(PjQuestions.create)
         ValidationHelper.check_answers(install_data)
         self.pj = Project(
@@ -221,7 +222,8 @@ class CommandPj:
         PjQuestions.select_project[0]['choices'] = map(lambda d: d['ref'], self.env.projects)
         ref_data = prompt(PjQuestions.select_project)
         ValidationHelper.check_answers(ref_data)
-        self.pj = Project(ref=ref_data)
+
+        self.pj = Project(ref=ref_data['pj_ref'])
         pj_task = prompt(PjQuestions.project_task)['pj_task']
         ValidationHelper.check_answers(pj_task)
         if pj_task == 'delete project':
@@ -237,9 +239,9 @@ class CommandPj:
         self.env.link_project(
             project=Project(
                     ref=link_data['install_ref'],
-                    name=link_data['install_name']),
-            db_name=link_data['database_name']
-        )
+                    name=link_data['install_name'],
+                    database=link_data['database_name'])
+                )
         self.main()
 
     def delete(self):
@@ -256,6 +258,7 @@ class CommandPj:
 
     def templatify(self):
         pj_data = self.env.get_project(self.pj.ref_name)
+        print(pj_data)
         ValidationHelper.check_answers(pj_data)
         self.pj = Project(
             ref=pj_data['ref'],

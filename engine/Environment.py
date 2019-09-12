@@ -1,4 +1,4 @@
-import os
+import os, sys
 from prettytable import PrettyTable
 
 from utils import GeneralHelper, ModuleFileSystem
@@ -76,7 +76,7 @@ class Environment:
         template_file.close()
 
         config_content = ""
-        with open("{path}public/admin/config.js".format(path=self.path.replace(' ', '')), 'w') as fp:
+        with open("{path}/public/admin/config.js".format(path=self.path.replace(' ', '')), 'w') as fp:
             for i in range(len(self.projects)):
                 if i+1 == len(self.projects):
                     tmpl = '\n"{path}":"{name}"'
@@ -142,17 +142,16 @@ class Environment:
 
         DirectusController.init_user(
             path=self.path,
-            pj_name=project.name
+            pj_name=project.ref_name
         )
         self.write_new_projects(project=project)
 
     def write_new_projects(self, project):
         database = project.database if project.database else project.ref_name
-        print(database)
         self.projects.append(dict(
-            ref=GeneralHelper.prepare_string(project.ref_name),
-            database=GeneralHelper.prepare_string(database),
-            name=GeneralHelper.prepare_string(project.name)
+            ref=project.ref_name,
+            database=database,
+            name=project.name
         ))
         self.write()
 
@@ -169,10 +168,10 @@ class Environment:
         db_env = db(username=self.db_user, password=self.db_pw)
         return list(map(lambda d: d[0], db_env.get_db_databases()))
 
-    def link_project(self, project, db_name):
+    def link_project(self, project):
         DirectusController.install_config(
             path=self.path,
-            db_name=db_name,
+            db_name=project.database,
             db_user=self.db_user,
             db_pw=self.db_pw,
             pj_name=project.ref_name

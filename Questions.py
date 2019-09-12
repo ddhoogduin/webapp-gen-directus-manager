@@ -88,7 +88,7 @@ class PjQuestions:
             'type': 'list',
             'name': 'task',
             'message': 'Environment tasks:',
-            'choices': ['create project', 'link project to database']
+            'choices': []
         }
     ]
     create = [
@@ -118,7 +118,7 @@ class PjQuestions:
             'type': 'list',
             'name': 'pj_task',
             'message': 'Project tasks:',
-            'choices': ['templatify project database', 'delete project', 'back']
+            'choices': ['templatify project database', 'delete project']
         }
     ]
     delete = [

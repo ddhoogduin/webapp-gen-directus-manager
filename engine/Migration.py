@@ -22,7 +22,7 @@ class Migration(db):
 
     def migrate(self, migration_file):
         os.system('mysql -u {username} --password="{password}" {database}'
-                  '< data/migrations/{filename} &> data/tmp/null'.format(
+                  '< data/migrations/{filename} &> data/tmp/dev/null'.format(
                     username=self.username,
                     password=self.password,
                     database=self.database,
@@ -46,7 +46,7 @@ class Migration(db):
                         timestamp=GeneralHelper.prepare_string(str(datetime.now()))
                     )
         os.system('mysqldump -u {username} --password="{password}" {database} {tables} '
-                  '> data/migrations/{filename}.sql &> data/tmp/null'.format(
+                  '> data/migrations/{filename}.sql'.format(
                     username=self.username,
                     password=self.password,
                     database=self.database,

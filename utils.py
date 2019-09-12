@@ -15,6 +15,7 @@ class ModuleFileSystem:
                 open(path, 'w').close()
 
 
+
 class GeneralHelper:
     @staticmethod
     def get_index_on_dict_value(collection, key, value):
@@ -26,6 +27,12 @@ class GeneralHelper:
     @staticmethod
     def prepare_string(str_value):
         return re.sub(r"\W", "", str_value)
+
+    @staticmethod
+    def prepare_name(str_value):
+        str_value = str_value.replace('\n', ' ').replace('\r', '')
+        str_value = str_value.replace('\t', '')
+        return str_value
 
     @staticmethod
     def prepare_path(str_value):

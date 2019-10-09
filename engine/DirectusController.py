@@ -18,6 +18,13 @@ class DirectusController:
                     pj_name=pj_name))
 
     @staticmethod
+    def init_directus(path):
+        os.system('cd {path} && bin/directus install:config -n filler -u filler -p filler'.format(
+            path=path
+        ))
+
+
+    @staticmethod
     def delete_config(path, pj_name):
         os.system('cd {path} && rm ./config/api.{ref_name}.php'.format(
             path=path,

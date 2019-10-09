@@ -14,6 +14,11 @@ class ModuleFileSystem:
             if not os.path.exists(path):
                 open(path, 'w').close()
 
+    @staticmethod
+    def check_file(file_path):
+        return os.path.exists(file_path)
+
+
 
 
 class GeneralHelper:

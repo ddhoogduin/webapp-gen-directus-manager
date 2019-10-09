@@ -2,7 +2,7 @@
 from prettytable import PrettyTable
 import os.path
 from utils import ModuleFileSystem, GeneralHelper
-
+from engine.DirectusController import DirectusController
 
 class Environments:
 
@@ -22,7 +22,13 @@ class Environments:
         }
         self.items.append(item)
         environment.init_env_project_file()
+        self.init_directus_env(environment)
         self.write()
+
+    def init_directus_env(self, environment):
+        if not ModuleFileSystem.check_file(environment.path+'config/api.php'):
+            DirectusController.init_directus(environment.path)
+
 
     def write(self):
         with open('data/envs.txt', 'w') as fp:

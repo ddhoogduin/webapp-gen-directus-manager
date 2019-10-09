@@ -1,0 +1,5 @@
+PyInquirer==1.0.3
+sqlalchemy
+mysql-connector-python
+prettytable
+pymysql

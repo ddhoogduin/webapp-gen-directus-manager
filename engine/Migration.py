@@ -10,9 +10,6 @@ from zipfile import ZipFile
 class Migration(db):
 
     directus__blacklist_tables = [
-        'directus_activity', 'directus_activity_seen',
-        'directus_files', 'directus_folders', 'directus_migrations',
-        ''
     ]
 
     def __init__(self, username, password, database, name):
